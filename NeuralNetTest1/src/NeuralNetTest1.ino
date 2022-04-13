@@ -22,21 +22,12 @@ class ezScale {
 public:
     int _min = 1000000;
     int _max = -1000000;
-    void calibrate(int value) {
-        if (value < _min) {
-            _min = value;
-        }
-        if (value > _max) {
-            _max = value;
-        }
-    }
 
     int diff() {
         return _max - _min;
     }
 
     int scale(int value, int min, int max) {
-        calibrate(value);
         return map(value, _min, _max, min, max);
     }
 };
@@ -48,7 +39,8 @@ ezScale mLScale;
 
 void setup() {
     Serial.begin(9600);
-    while (!Serial);
+    while (!Serial)
+        ;
     pinMode(POINTER_H_PIN, INPUT);
     pinMode(POINTER_L_PIN, INPUT);
     pinMode(MIDDLE_H_PIN, INPUT);
@@ -57,21 +49,6 @@ void setup() {
     pinMode(BLUE_BUTTON_PIN, INPUT_PULLUP);
     pinMode(CALIBRATE_LED_PIN, OUTPUT);
 
-    digitalWrite(CALIBRATE_LED_PIN, HIGH);
-    {
-        int startTime = millis();
-        while (millis() - startTime < 5000) {
-            pHScale.calibrate(analogRead(POINTER_H_PIN));
-            pLScale.calibrate(analogRead(POINTER_L_PIN));
-            mHScale.calibrate(analogRead(MIDDLE_H_PIN));
-            mLScale.calibrate(analogRead(MIDDLE_L_PIN));
-        }
-        Serial.printf("Pointer High Scale Range: %d -> %d  [%d]\n", pHScale._min, pHScale._max, pHScale.diff());
-        Serial.printf("Pointer Low Scale Range: %d -> %d  [%d]\n", pLScale._min, pLScale._max, pLScale.diff());
-        Serial.printf("Middle High Scale Range: %d -> %d  [%d]\n", mHScale._min, mHScale._max, mHScale.diff());
-        Serial.printf("Middle Low Scale Range: %d -> %d  [%d]\n", mLScale._min, mLScale._max, mLScale.diff());
-    }
-    digitalWrite(CALIBRATE_LED_PIN, LOW);
 }
 
 void loop() {
@@ -80,17 +57,27 @@ void loop() {
     bool curRedState = digitalRead(RED_BUTTON_PIN);
     bool curBlueState = digitalRead(BLUE_BUTTON_PIN);
 
-    int pH = pHScale.scale(analogRead(POINTER_H_PIN), 0, 255);
-    int pL = pHScale.scale(analogRead(POINTER_L_PIN), 0, 255);
-    int mH = pHScale.scale(analogRead(MIDDLE_H_PIN), 0, 255);
-    int mL = pHScale.scale(analogRead(MIDDLE_L_PIN), 0, 255);
 
     if (!lastRedState && curRedState) {
-        Serial.printf("R:%d,%d,%d,%d", pH, pL, mH, mL);
+        pHScale._min = analogRead(POINTER_H_PIN);
+        pLScale._min = analogRead(POINTER_L_PIN);
+        mHScale._min = analogRead(MIDDLE_H_PIN);
+        mLScale._min = analogRead(MIDDLE_L_PIN);
     }
+
     if (!lastBlueState && curBlueState) {
-        Serial.printf("B:%d,%d,%d,%d", pH, pL, mH, mL);
+        pHScale._max = analogRead(POINTER_H_PIN);
+        pLScale._max = analogRead(POINTER_L_PIN);
+        mHScale._max = analogRead(MIDDLE_H_PIN);
+        mLScale._max = analogRead(MIDDLE_L_PIN);
     }
+
+    int pH = pHScale.scale(analogRead(POINTER_H_PIN), 0, 99);
+    int pL = pLScale.scale(analogRead(POINTER_L_PIN), 0, 99);
+    int mH = mHScale.scale(analogRead(MIDDLE_H_PIN), 0, 99);
+    int mL = mLScale.scale(analogRead(MIDDLE_L_PIN), 0, 99);
+
+    Serial.printf("PH: %02d    PL: %02d   MH: %02d   ML: %02d\n", pH, pL, mH, mL);
 
     lastRedState = curRedState;
     lastBlueState = curBlueState;
