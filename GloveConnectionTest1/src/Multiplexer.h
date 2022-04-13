@@ -23,19 +23,43 @@ public:
         pinMode(s2, OUTPUT);
         pinMode(s3, OUTPUT);
         pinMode(sig, INPUT);
+
+        set(index);
+        disable();
+    }
+
+    void enable() {
+        digitalWrite(en, LOW);
+    }
+
+    void disable() {
+        digitalWrite(en, HIGH);
     }
 
     void set(byte index) {
+        if (index < 0 || index > 15) {
+            Serial.printf("Multiplexer.set() > value must be in the range of 0...15, value = %d\n", index);
+            return;
+        }
 
+        digitalWrite(s0, (index & 0x1) >> 0);
+        digitalWrite(s1, (index & 0x2) >> 1);
+        digitalWrite(s2, (index & 0x4) >> 2);
+        digitalWrite(s3, (index & 0x8) >> 3);
     }
 
-    void read(byte index) {
-
+    int read(byte index) {
+        set(index);
+        return read();
     }
 
-    int  read() {
-
+    int read() {
+        enable();
+        int val = analogRead(sig);
+        disable();
+        
+        return val;
     }
-}
+};
 
 #endif
