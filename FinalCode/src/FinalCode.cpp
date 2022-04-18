@@ -27,20 +27,27 @@ void setup() {
 }
 
 void loop() {
-  MultiplexerCollection dat(&myMulp);
+  if (Serial.available() > 0) {
+    String dat = Serial.readString();
+    // Serial.printf(dat);
+    if (dat.equals("PEACE_REQUEST")) {
+      Serial.printf("PEACE_COMPLETE");
+    }
+  }
+  // MultiplexerCollection dat(&myMulp);
 
-  Serial.printf("%.2f     ", dat.thumb);
+  // Serial.printf("%.2f     ", dat.thumb);
 
-  Serial.printf("%.2f  ", dat.pointer_high);
-  Serial.printf("%.2f     ", dat.pointer_low);
+  // Serial.printf("%.2f  ", dat.pointer_high);
+  // Serial.printf("%.2f     ", dat.pointer_low);
 
-  Serial.printf("%.2f  ", dat.middle_high);
-  Serial.printf("%.2f     ", dat.middle_low);
+  // Serial.printf("%.2f  ", dat.middle_high);
+  // Serial.printf("%.2f     ", dat.middle_low);
 
-  Serial.printf("%.2f  ", dat.ring_high);
-  Serial.printf("%.2f     ", dat.ring_low);
+  // Serial.printf("%.2f  ", dat.ring_high);
+  // Serial.printf("%.2f     ", dat.ring_low);
 
-  Serial.printf("%.2f  ", dat.pinky_high);
-  Serial.printf("%.2f     ", dat.pinky_low);
-  Serial.printf("\n");
+  // Serial.printf("%.2f  ", dat.pinky_high);
+  // Serial.printf("%.2f     ", dat.pinky_low);
+  // Serial.printf("\n");
 }
