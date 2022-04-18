@@ -1,18 +1,37 @@
 /*
- * Project FinalCode
- * Description:
- * Author:
- * Date:
+ * Project: A Data Glove
+ * Description: Code to read a dataglove
+ * Author: Devon Palma
+ * Date: 4/18/2022
  */
 
-// setup() runs once, when the device is first turned on.
-void setup() {
-  // Put initialization like pinMode and begin functions here.
+SYSTEM_MODE(SEMI_AUTOMATIC);
 
+#include "PinData.h"
+#include "Multiplexer.h"
+#include "MultiplexerCollector.h"
+
+Multiplexer myMulp(P_MULP_ENABLE, P_MULP_S0, P_MULP_S1, P_MULP_S2, P_MULP_S3, P_MULP_SIGNAL);
+
+void setup() {
+  myMulp.begin();
 }
 
-// loop() runs over and over again, as quickly as it can execute.
 void loop() {
-  // The core of your code will likely live here.
+  MultiplexerCollection dat(&myMulp);
 
+  Serial.printf("%.2f     ", dat.thumb);
+
+  Serial.printf("%.2f  ", dat.pointer_high);
+  Serial.printf("%.2f     ", dat.pointer_low);
+
+  Serial.printf("%.2f  ", dat.middle_high);
+  Serial.printf("%.2f     ", dat.middle_low);
+
+  Serial.printf("%.2f  ", dat.ring_high);
+  Serial.printf("%.2f     ", dat.ring_low);
+
+  Serial.printf("%.2f  ", dat.pinky_high);
+  Serial.printf("%.2f     ", dat.pinky_low);
+  Serial.printf("\n");
 }
