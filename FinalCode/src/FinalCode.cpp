@@ -16,38 +16,71 @@ void loop();
 #line 8 "c:/Users/deedp/Documents/IOT/SmartGlove/FinalCode/src/FinalCode.ino"
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
-#include "PinData.h"
 #include "Multiplexer.h"
 #include "MultiplexerCollector.h"
+#include "PinData.h"
 
 Multiplexer myMulp(P_MULP_ENABLE, P_MULP_S0, P_MULP_S1, P_MULP_S2, P_MULP_S3, P_MULP_SIGNAL);
 
+MultiplexerCollection peaceSign;
+bool peaceSignSet = false;
+
+MultiplexerCollection thumbsUpSign;
+bool thumbsUpSignSet = false;
+
+MultiplexerCollection* getBestCollection(MultiplexerCollection* currentCol);
+
 void setup() {
-  myMulp.begin();
+    myMulp.begin();
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    String dat = Serial.readString();
-    // Serial.printf(dat);
-    if (dat.equals("PEACE_REQUEST")) {
-      Serial.printf("PEACE_COMPLETE");
+    MultiplexerCollection mpc(&myMulp);
+
+
+    
+    if (Serial.available() > 0) {
+        String serialData = Serial.readString();
+        if (serialData.equals("REQ_PEACE")) {
+            peaceSign.set(&mpc);
+            peaceSignSet = true;
+            Serial.printf("PROG_PEACE");
+        } else if (serialData.equals("REQ_THUMB_UP")) {
+            thumbsUpSign.set(&mpc);
+            thumbsUpSignSet = true;
+            Serial.printf("PROG_THUMB_UP");
+        } else if (serialData.equals("REQ_BEST")) {
+            MultiplexerCollection* bestCollection = getBestCollection(&mpc);
+            if (bestCollection == &peaceSign) {
+              Serial.printf("BEST_PEACE");
+            } else if (bestCollection == &thumbsUpSign) {
+              Serial.printf("BEST_THUMB_UP");
+            } else {
+              Serial.printf("BEST_UNKNOWN");
+            }
+        }
     }
-  }
-  // MultiplexerCollection dat(&myMulp);
+}
 
-  // Serial.printf("%.2f     ", dat.thumb);
+MultiplexerCollection* getBestCollection(MultiplexerCollection* currentCol) {
+    int bestVal = 256*9; // Impossible to get past this with the algorithm i use
+    MultiplexerCollection *bestCollection;
 
-  // Serial.printf("%.2f  ", dat.pointer_high);
-  // Serial.printf("%.2f     ", dat.pointer_low);
+    if (peaceSignSet) {
+        int thisVal = peaceSign.compare(currentCol);
+        if (thisVal < bestVal) {
+          bestVal = thisVal;
+          bestCollection = &peaceSign;
+        }
+    }
 
-  // Serial.printf("%.2f  ", dat.middle_high);
-  // Serial.printf("%.2f     ", dat.middle_low);
+    if (thumbsUpSignSet) {
+        int thisVal = thumbsUpSign.compare(currentCol);
+        if (thisVal < bestVal) {
+          bestVal = thisVal;
+          bestCollection = &thumbsUpSign;
+        }
+    }
 
-  // Serial.printf("%.2f  ", dat.ring_high);
-  // Serial.printf("%.2f     ", dat.ring_low);
-
-  // Serial.printf("%.2f  ", dat.pinky_high);
-  // Serial.printf("%.2f     ", dat.pinky_low);
-  // Serial.printf("\n");
+    return bestCollection;
 }
