@@ -85,9 +85,11 @@ class TextFrameBuilder {
 
 
 class Button {
-  private TextFrame basicApperance;
-  private TextFrame hoverApperance;
-  private Runnable clickAction;
+  protected TextFrame basicApperance;
+  protected TextFrame hoverApperance;
+  protected Runnable clickAction;
+  
+  protected Button() {}
   
   public Button(TextFrame defaultApperance) {
     this.basicApperance = defaultApperance;
@@ -118,5 +120,41 @@ class Button {
     if (isMouseInside() && clickAction != null) {
        clickAction.run(); 
     }
+  }
+}
+
+class CommandButton extends Button {
+  
+  public static final int DEFAULT_WIDTH = 150;
+  public static final int DEFAULT_HEIGHT = 50;
+  public static final int HOVER_DIFF = 5;
+  public static final int START_POS_X = 20;
+  public static final int START_POS_Y = 20;
+  
+  private Commands cmd;
+  
+  public CommandButton(int x, int y, Commands command) {
+    super();
+    this.cmd = command;
+    int actualX = START_POS_X + DEFAULT_WIDTH * x;
+    int actualY = START_POS_Y + DEFAULT_HEIGHT * y;
+    basicApperance = new TextFrameBuilder(actualX, actualY, DEFAULT_WIDTH, DEFAULT_HEIGHT)
+                      .setBackground(color(255))
+                      .setBorder(color(0))
+                      .setText(command.toString())
+                      .setTextColor(color(0))
+                      .build(); 
+    hoverApperance = new TextFrameBuilder(actualX-HOVER_DIFF, actualY-HOVER_DIFF, DEFAULT_WIDTH + HOVER_DIFF*2, DEFAULT_HEIGHT + HOVER_DIFF*2)
+                      .setBackground(color(200))
+                      .setBorder(color(50))
+                      .setText("Send \n" + command.toString() + "?")
+                      .setTextColor(color(0))
+                      .build();
+    clickAction = new Runnable() {
+      public void run() {
+        System.out.printf("Sending command '%s' to particle\n", cmd.toString());
+        myPort.write(cmd.val);
+      }
+    };
   }
 }

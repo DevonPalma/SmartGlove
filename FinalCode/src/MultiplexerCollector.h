@@ -48,6 +48,19 @@ struct MultiplexerCollection {
         pinky_low = mulpC->pinky_low;
     }
 
+
+    bool isSet() {
+        return  thumb != 0 && 
+                pointer_high != 0 &&
+                pointer_low != 0 &&
+                middle_high != 0 &&
+                middle_low != 0 &&
+                ring_high != 0 &&
+                ring_low != 0 &&
+                pinky_high != 0 &&
+                pinky_low != 0; 
+    }
+
     // compares how close a mulp is to another (Sum of differences between each finger)
     int compare(MultiplexerCollection *mulpC) {
         int val = 0;

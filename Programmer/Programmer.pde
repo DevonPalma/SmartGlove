@@ -1,58 +1,80 @@
 import processing.serial.*;
+import java.util.List;
+import java.util.ArrayList;
+
 
 Serial myPort;
+List<CommandButton> myButtons;
 
 void setup() {
   size(640, 360);
-  createPeaceSignButton(20, 20);
-  createThumbsUpButton(150, 20);
-  createGetBestButton(280,20);
   myPort = new Serial(this, "COM5", 9600);
+  myButtons = new ArrayList<CommandButton>();
+
+  myButtons.add(new CommandButton(0, 0, Commands.PROGRAM_PEACE));
+  myButtons.add(new CommandButton(1, 0, Commands.PROGRAM_THUMB_UP));
+  myButtons.add(new CommandButton(2, 0, Commands.PROGRAM_ROCK_ON));
+  myButtons.add(new CommandButton(3, 3, Commands.REQUEST_BEST));
 }
 
-
-
-void programPeaceSign() {
-   System.out.printf("Sending peace sign program request...");
-   myPort.write("REQ_PEACE");
-}
-
-void programThumbsUp() {
-   System.out.printf("Sending peace sign program request...");
-   myPort.write("REQ_THUMB_UP");
-}
-
-void requestBest() {
-  System.out.printf("Requesting best match...");
-  myPort.write("REQ_BEST");
-}
 
 void draw() {
   background(255);
-  peaceSignButton.draw();
-  thumbsUpButton.draw();
-  getBestButton.draw();
-  
-  while(myPort.available() > 0) {
-    String dat = myPort.readString();
-    if (dat.equals("PROG_PEACE")) {
-       System.out.printf("Peace sign programmed\n"); 
-    } else if (dat.equals("PROG_THUMB_UP")){
-      System.out.printf("Thumps up sign programmed\n");
-    } else if (dat.equals("BEST_PEACE")) {
-      System.out.printf("Best is peace\n");
-    } else if (dat.equals("BEST_THUMB_UP")) {
-      System.out.printf("Best is thumb up\n");
-    } else if (dat.equals("BEST_UNKOWN")) {
-      System.out.printf("No best found\n");
+
+  // Draw all buttons. If one is hovered, it will be drawn last.
+  CommandButton activeButton = null;
+  for (int i = 0; i < myButtons.size(); i++) {
+    CommandButton iButton = myButtons.get(i);
+    if (iButton.isMouseInside()) {
+      activeButton = iButton;
     } else {
-      System.out.print(dat); 
+      iButton.draw();
+    }
+  }
+  if (activeButton != null) {
+    activeButton.draw();
+  }
+  
+  
+  
+  // Check if the port has more than one byte. If so just print the byte.
+  if (myPort.available() > 1) {
+    String dat = myPort.readString();
+    System.out.print("Particle > " + dat);
+  } else if (myPort.available() == 1) { // Otherwise treat the single byte as a command
+    Commands cmd = Commands.getCommand(myPort.read());
+    switch(cmd) {
+    case PROGRAMMED_PEACE:
+      System.out.printf("Programmer > Successfully programmed the peace sign\n");
+      break;
+    case PROGRAMMED_THUMB_UP:
+      System.out.printf("Programmer > Successfully programmed the thumbs up sign\n");
+      break;
+    case PROGRAMMED_ROCK_ON:
+      System.out.printf("Programmer > Successfully programmed the rock on sign\n");
+      break;
+    case BEST_PEACE:
+      System.out.printf("Programmer > Best value is the peace sign\n");
+      break;
+    case BEST_THUMB_UP:
+      System.out.printf("Programmer > Best value is the thumbs up sign\n");
+      break;
+    case BEST_ROCK_ON:
+      System.out.printf("Programmer > Best value is the rock on sign\n");
+      break;
+    case BEST_UNKNOWN:
+      System.out.printf("Programmer > Unknown best value\n");
+      break;
+    default:
+      // Should never get here
+      System.out.printf("Programmer > ERROR: Recieved command %s:'%d', not currently implemented\n", cmd.toString(), cmd.val);
+      break;
     }
   }
 }
 
 void mousePressed() {
-   peaceSignButton.mousePressed();
-   thumbsUpButton.mousePressed();
-   getBestButton.mousePressed();
+  for (int i = 0; i < myButtons.size(); i++) {
+    myButtons.get(i).mousePressed();
+  }
 }
