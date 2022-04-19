@@ -15,16 +15,15 @@ SYSTEM_MODE(SEMI_AUTOMATIC);
 // For some reason this has to be declared RIGHT after my imports IDFK
 MultiplexerCollection *getBestCollection(MultiplexerCollection *comparedCol);
 
-
 Multiplexer myMulp(P_MULP_ENABLE, P_MULP_S0, P_MULP_S1, P_MULP_S2, P_MULP_S3, P_MULP_SIGNAL);
 
 MultiplexerCollection peaceSign;
 MultiplexerCollection thumbsUpSign;
 MultiplexerCollection rockOnSign;
+MultiplexerCollection spiderManSign;
 
-int allSignsCount = 3;
-MultiplexerCollection *allSigns[] = {&peaceSign, &thumbsUpSign, &rockOnSign};
-
+int allSignsCount = 4;
+MultiplexerCollection *allSigns[] = {&peaceSign, &thumbsUpSign, &rockOnSign, &spiderManSign};
 
 void setup() {
     myMulp.begin();
@@ -43,6 +42,9 @@ void loop() {
             break;
         case PROGRAM_ROCK_ON:
             cmdProgramRockOn();
+            break;
+        case PROGRAM_SPIDER_MAN:
+            cmdProgramSpiderMan();
             break;
         case REQUEST_BEST:
             cmdRequestBest();
@@ -72,6 +74,12 @@ void cmdProgramRockOn() {
     Serial.write(PROGRAMMED_ROCK_ON);
 }
 
+void cmdProgramSpiderMan() {
+    MultiplexerCollection mpc(&myMulp);
+    spiderManSign.set(&mpc);
+    Serial.write(PROGRAMMED_SPIDER_MAN);
+}
+
 void cmdRequestBest() {
     MultiplexerCollection mpc(&myMulp);
     MultiplexerCollection *bestCol = getBestCollection(&mpc);
@@ -81,6 +89,8 @@ void cmdRequestBest() {
         Serial.write(BEST_THUMB_UP);
     } else if (bestCol == &rockOnSign) {
         Serial.write(BEST_ROCK_ON);
+    } else if (bestCol == &spiderManSign) {
+        Serial.write(BEST_SPIDER_MAN);
     } else {
         Serial.write(BEST_UNKNOWN);
     }

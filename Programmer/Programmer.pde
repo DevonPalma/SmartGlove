@@ -14,6 +14,7 @@ void setup() {
   myButtons.add(new CommandButton(0, 0, Commands.PROGRAM_PEACE));
   myButtons.add(new CommandButton(1, 0, Commands.PROGRAM_THUMB_UP));
   myButtons.add(new CommandButton(2, 0, Commands.PROGRAM_ROCK_ON));
+  myButtons.add(new CommandButton(3, 0, Commands.PROGRAM_SPIDER_MAN));
   myButtons.add(new CommandButton(3, 3, Commands.REQUEST_BEST));
 }
 
@@ -45,22 +46,16 @@ void draw() {
     Commands cmd = Commands.getCommand(myPort.read());
     switch(cmd) {
     case PROGRAMMED_PEACE:
-      System.out.printf("Programmer > Successfully programmed the peace sign\n");
-      break;
     case PROGRAMMED_THUMB_UP:
-      System.out.printf("Programmer > Successfully programmed the thumbs up sign\n");
-      break;
     case PROGRAMMED_ROCK_ON:
-      System.out.printf("Programmer > Successfully programmed the rock on sign\n");
+    case PROGRAMMED_SPIDER_MAN:
+      System.out.printf("Programmer > Successfully programmed the %s sign\n", cmd.toString());
       break;
     case BEST_PEACE:
-      System.out.printf("Programmer > Best value is the peace sign\n");
-      break;
     case BEST_THUMB_UP:
-      System.out.printf("Programmer > Best value is the thumbs up sign\n");
-      break;
     case BEST_ROCK_ON:
-      System.out.printf("Programmer > Best value is the rock on sign\n");
+    case BEST_SPIDER_MAN:
+      System.out.printf("Programmer > Best value is the %s sign\n", cmd.toString());
       break;
     case BEST_UNKNOWN:
       System.out.printf("Programmer > Unknown best value\n");
