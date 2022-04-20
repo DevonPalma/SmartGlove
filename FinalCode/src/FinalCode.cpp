@@ -13,11 +13,8 @@
 
 void setup();
 void loop();
-void cmdProgramPeace();
-void cmdProgramThumbsUp();
-void cmdProgramRockOn();
-void cmdProgramSpiderMan();
-void cmdRequestBest();
+void programFingerPosition(byte fingerPos);
+void handleRequest(byte request);
 #line 8 "c:/Users/deedp/Documents/IOT/SmartGlove/FinalCode/src/FinalCode.ino"
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
@@ -27,103 +24,73 @@ SYSTEM_MODE(SEMI_AUTOMATIC);
 #include "SharedCommands.h"
 
 // For some reason this has to be declared RIGHT after my imports IDFK
-MultiplexerCollection *getBestCollection(MultiplexerCollection *comparedCol);
+int getBestCollection(MultiplexerCollection *comparedCol);
+void programFingerPosition(FingerPosition fingerPos);
 
 Multiplexer myMulp(P_MULP_ENABLE, P_MULP_S0, P_MULP_S1, P_MULP_S2, P_MULP_S3, P_MULP_SIGNAL);
 
-MultiplexerCollection peaceSign;
-MultiplexerCollection thumbsUpSign;
-MultiplexerCollection rockOnSign;
-MultiplexerCollection spiderManSign;
-
-int allSignsCount = 4;
-MultiplexerCollection *allSigns[] = {&peaceSign, &thumbsUpSign, &rockOnSign, &spiderManSign};
+MultiplexerCollection allSigns[HAND_POS_COUNT];
 
 void setup() {
     myMulp.begin();
+    for (int i = 0; i < HAND_POS_COUNT; i++) {
+      allSigns[i].loadFromEEPROM(i);
+    }
 }
 
 void loop() {
     if (Serial.available() > 0) {
-        Commands cmd = (Commands)Serial.read();
-
+        byte cmd, data;
+        readCommand(&cmd, &data);
         switch (cmd) {
-        case PROGRAM_PEACE:
-            cmdProgramPeace();
+        case PROGRAM:
+            programFingerPosition(data);
             break;
-        case PROGRAM_THUMB_UP:
-            cmdProgramThumbsUp();
-            break;
-        case PROGRAM_ROCK_ON:
-            cmdProgramRockOn();
-            break;
-        case PROGRAM_SPIDER_MAN:
-            cmdProgramSpiderMan();
-            break;
-        case REQUEST_BEST:
-            cmdRequestBest();
+        case REQUEST:
+            handleRequest(data);
             break;
         default:
-            Serial.printf("ERROR: Recieved command '%d', not currently implemented.\n", cmd);
+            sendCommand(STATUS, UNIMPLEMENTED_COMMAND);
             break;
         }
     }
 }
 
-void cmdProgramPeace() {
-    MultiplexerCollection mpc(&myMulp);
-    peaceSign.set(&mpc);
-    Serial.write(PROGRAMMED_PEACE);
-}
-
-void cmdProgramThumbsUp() {
-    MultiplexerCollection mpc(&myMulp);
-    thumbsUpSign.set(&mpc);
-    Serial.write(PROGRAMMED_THUMB_UP);
-}
-
-void cmdProgramRockOn() {
-    MultiplexerCollection mpc(&myMulp);
-    rockOnSign.set(&mpc);
-    Serial.write(PROGRAMMED_ROCK_ON);
-}
-
-void cmdProgramSpiderMan() {
-    MultiplexerCollection mpc(&myMulp);
-    spiderManSign.set(&mpc);
-    Serial.write(PROGRAMMED_SPIDER_MAN);
-}
-
-void cmdRequestBest() {
-    MultiplexerCollection mpc(&myMulp);
-    MultiplexerCollection *bestCol = getBestCollection(&mpc);
-    if (bestCol == &peaceSign) {
-        Serial.write(BEST_PEACE);
-    } else if (bestCol == &thumbsUpSign) {
-        Serial.write(BEST_THUMB_UP);
-    } else if (bestCol == &rockOnSign) {
-        Serial.write(BEST_ROCK_ON);
-    } else if (bestCol == &spiderManSign) {
-        Serial.write(BEST_SPIDER_MAN);
-    } else {
-        Serial.write(BEST_UNKNOWN);
+void programFingerPosition(byte fingerPos) {
+    if (fingerPos < HAND_POS_COUNT) {
+        MultiplexerCollection mpc(&myMulp);
+        allSigns[fingerPos].set(&mpc);
+        allSigns[fingerPos].saveToEEPROM(fingerPos);
+        sendCommand(STATUS, PROGRAM_SUCCESSFUL);
     }
 }
 
-MultiplexerCollection *getBestCollection(MultiplexerCollection *comparedCol) {
-    int bestVal = 256 * 9; // Impossible to get past this with the algorithm i use
-    MultiplexerCollection *bestCollection = 0;
+void handleRequest(byte request) {
+    if (request == BEST) {
+        MultiplexerCollection mpc(&myMulp);
+        int bestCol = getBestCollection(&mpc);
+        if (bestCol == -1) {
+            sendCommand(STATUS, REQUEST_FAILED);
+        } else {
+            sendCommand(BEST_FINGER, bestCol);
+        }
+    }
+}
 
-    for (int i = 0; i < allSignsCount; i++) {
-        MultiplexerCollection *curSign = allSigns[i];
+int getBestCollection(MultiplexerCollection *comparedCol) {
+    int bestVal = 256 * 9; // Impossible to get past this with the algorithm i use
+    int bestColIndex = -1;
+
+    for (int i = 0; i < HAND_POS_COUNT; i++) {
+        MultiplexerCollection *curSign = &allSigns[i];
         if (curSign->isSet()) {
             int curVal = curSign->compare(comparedCol);
             if (curVal < bestVal) {
                 bestVal = curVal;
-                bestCollection = curSign;
+                bestColIndex = i;
             }
         }
     }
 
-    return bestCollection;
+    return bestColIndex;
 }

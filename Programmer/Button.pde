@@ -1,160 +1,219 @@
-interface ButtonClick {
-  void click(); 
+import java.util.List;
+import java.util.ArrayList;
+
+interface BoolChecker {
+  public boolean check();
 }
 
-class TextFrame {
-  protected int x;
-  protected int y;
-  protected int w;
-  protected int h;
-  protected int backgroundColor;
-  protected int borderColor;
-  
-  protected String text;
-  protected int textColor;
-  protected int textSpacing;
-  
-  public TextFrame(int x, int y, int w, int h) {
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    textSpacing = 3;
+class ButtonDescription {
+  Integer x, y, w, h;
+  Integer extraSize, textSpacing;
+  Integer backgroundColor, borderColor, textColor;
+  String text;
+
+  public ButtonDescription() {
+    this(false);
   }
-  
-  public void setBackground(int col) {
-    this.backgroundColor = col;
-  }
-  
-  public void setBorder(int col) {
-    this.borderColor = col;
-  }
-  
-  public void setText(String text) {
-    this.text = text;
-  }
-  
-  public void setTextColor(int col) {
-     this.textColor = col;
-  }
-  
-  public void draw() {
-    fill(backgroundColor);
-    stroke(borderColor);
-    rect(x, y, w, h);
-    if (text != null) {
-      textAlign(CENTER, CENTER);
-      fill(textColor);
-      text(text, x + textSpacing, y + textSpacing, w - textSpacing*2, h - textSpacing*2);
+
+  public ButtonDescription(boolean defaultValues) {
+    if (defaultValues) {
+      x = 0;
+      y = 0;
+      w = 0;
+      h = 0;
+      extraSize = 0;
+      textSpacing = 0;
+      backgroundColor = 0;
+      borderColor = 0;
+      textColor = 0;
+      text = null;
+    } else {
+      x = null;
+      y = null;
+      w = null;
+      h = null;
+      extraSize = null;
+      textSpacing = null;
+      backgroundColor = null;
+      borderColor = null;
+      textColor = null;
+      text = null;
     }
   }
+
+  public void override(ButtonDescription overrider) {
+    if (overrider.x != null)
+      x = overrider.x;
+    if (overrider.y != null)
+      y = overrider.y;
+    if (overrider.w != null)
+      w = overrider.w;
+    if (overrider.h != null)
+      h = overrider.h;
+      
+    if (overrider.extraSize != null)
+      extraSize = overrider.extraSize;
+      
+    if (overrider.textSpacing != null)
+      textSpacing = overrider.textSpacing;
+      
+    if (overrider.backgroundColor != null)
+      backgroundColor = overrider.backgroundColor;
+      
+    if (overrider.borderColor != null)
+      borderColor = overrider.borderColor;
+      
+    if (overrider.textColor != null)
+      textColor = overrider.textColor;
+      
+    if (overrider.text != null)
+      text = overrider.text;
+  }
 }
 
-class TextFrameBuilder {
-  private TextFrame frame;
+class ButtonDescriptionBuilder {
+  private ButtonDescription desc;
   
-  public TextFrameBuilder(int x, int y, int w, int h) {
-     frame = new TextFrame(x, y, w, h); 
+  public ButtonDescriptionBuilder() {
+    desc = new ButtonDescription();
   }
   
-  public TextFrameBuilder setBackground(int col) {
-    frame.setBackground(col);
+  public ButtonDescriptionBuilder x(int x) {
+    desc.x = x;
     return this;
   }
   
-  public TextFrameBuilder setBorder(int col) {
-    frame.setBorder(col);
+  public ButtonDescriptionBuilder y(int y) {
+    desc.y = y;
     return this;
   }
   
-  public TextFrameBuilder setText(String text) {
-    frame.setText(text);
+  public ButtonDescriptionBuilder pos(int x, int y) {
+    desc.x = x;
+    desc.y = y;
     return this;
   }
   
-  public TextFrameBuilder setTextColor(int col) {
-    frame.setTextColor(col);
+  public ButtonDescriptionBuilder width(int w) {
+    desc.w = w;
     return this;
   }
   
-  public TextFrame build() {
-     return frame; 
+  public ButtonDescriptionBuilder height(int h) {
+    desc.h = h;
+    return this;
+  }
+  
+  public ButtonDescriptionBuilder size(int w, int h) {
+    desc.w = w;
+    desc.h = h;
+    return this;
+  }
+  
+  public ButtonDescriptionBuilder dimension(int x, int y, int w, int h) {
+    desc.x = x;
+    desc.y = y;
+    desc.w = w;
+    desc.h = h;
+    return this;
+  }
+  
+  public ButtonDescriptionBuilder extraSize(int v) {
+    desc.extraSize = v;
+    return this;
+  }
+  
+  public ButtonDescriptionBuilder text(String text) {
+    desc.text = text;
+    return this;
+  }
+  
+  public ButtonDescriptionBuilder textSpacing(int v) {
+    desc.textSpacing = v;
+    return this;
+  }
+  
+  public ButtonDescriptionBuilder backgroundColor(int c) {
+    desc.backgroundColor = c;
+    return this;
+  }
+  
+  public ButtonDescriptionBuilder borderColor(int c) {
+    desc.borderColor = c;
+    return this;
+  }
+  
+  public ButtonDescriptionBuilder textColor(int c) {
+    desc.textColor = c;
+    return this;
+  }
+  
+  public ButtonDescription build() {
+     return desc; 
   }
 }
 
 
 
 class Button {
-  protected TextFrame basicApperance;
-  protected TextFrame hoverApperance;
-  protected Runnable clickAction;
-  
-  protected Button() {}
-  
-  public Button(TextFrame defaultApperance) {
-    this.basicApperance = defaultApperance;
-  }
-  
-  public void setHover(TextFrame appearance) {
-     hoverApperance = appearance;
-  }
-  
-  public void setClickAction(Runnable clickAction) {
-    this.clickAction = clickAction;
-  }
-  
-  public boolean isMouseInside() {
-    return  (mouseX >= basicApperance.x && mouseX <= basicApperance.x+basicApperance.w 
-          && mouseY >= basicApperance.y && mouseY <= basicApperance.y+basicApperance.h);
-  }
-  
-  public void draw() {
-    if (isMouseInside() && hoverApperance != null) {
-      hoverApperance.draw();
-    } else {
-      basicApperance.draw();
-    }
-  }
-  
-  public void mousePressed() {
-    if (isMouseInside() && clickAction != null) {
-       clickAction.run(); 
-    }
-  }
-}
+  private List<BoolChecker> checkers;
+  private List<ButtonDescription> descriptions;
+  private ButtonDescription currentFullDesc;
+  private Runnable onClickAction;
 
-class CommandButton extends Button {
+  public Button() {
+    checkers = new ArrayList();
+    descriptions = new ArrayList();
+  }
+
+  public Button addDescription(BoolChecker req, ButtonDescription description) {
+    checkers.add(req);
+    descriptions.add(description);
+    return this;
+  }
   
-  public static final int DEFAULT_WIDTH = 150;
-  public static final int DEFAULT_HEIGHT = 50;
-  public static final int HOVER_DIFF = 5;
-  public static final int START_POS_X = 20;
-  public static final int START_POS_Y = 20;
-  
-  private Commands cmd;
-  
-  public CommandButton(int x, int y, Commands command) {
-    super();
-    this.cmd = command;
-    int actualX = START_POS_X + DEFAULT_WIDTH * x;
-    int actualY = START_POS_Y + DEFAULT_HEIGHT * y;
-    basicApperance = new TextFrameBuilder(actualX, actualY, DEFAULT_WIDTH, DEFAULT_HEIGHT)
-                      .setBackground(color(255))
-                      .setBorder(color(0))
-                      .setText(command.toString())
-                      .setTextColor(color(0))
-                      .build(); 
-    hoverApperance = new TextFrameBuilder(actualX-HOVER_DIFF, actualY-HOVER_DIFF, DEFAULT_WIDTH + HOVER_DIFF*2, DEFAULT_HEIGHT + HOVER_DIFF*2)
-                      .setBackground(color(200))
-                      .setBorder(color(50))
-                      .setText("Send \n" + command.toString() + "?")
-                      .setTextColor(color(0))
-                      .build();
-    clickAction = new Runnable() {
-      public void run() {
-        System.out.printf("Sending command '%s' to particle\n", cmd.toString());
-        myPort.write(cmd.val);
+  public Button bindOnClick(Runnable action) {
+    this.onClickAction = action;
+    return this;
+  }
+
+
+  public void update() {
+    currentFullDesc = new ButtonDescription(true);
+
+    for (int i = 0; i < checkers.size(); i++) {
+      if (checkers.get(i).check()) {
+        currentFullDesc.override(descriptions.get(i));
       }
-    };
+    }
+  }
+
+  public void draw() {
+    int x = currentFullDesc.x - currentFullDesc.extraSize;
+    int y = currentFullDesc.y - currentFullDesc.extraSize;
+    int w = currentFullDesc.w + currentFullDesc.extraSize*2;
+    int h = currentFullDesc.h + currentFullDesc.extraSize*2;
+
+    fill(currentFullDesc.backgroundColor);
+    stroke(currentFullDesc.borderColor);
+    rect(x, y, w, h);
+    if (currentFullDesc.text != null) {
+      int ts = currentFullDesc.textSpacing;
+      textAlign(CENTER, CENTER);
+      fill(currentFullDesc.textColor);
+      text(currentFullDesc.text, x+ts, y+ts, w-ts*2, h-ts*2);
+    }
+  }
+
+  public boolean isMouseInside() {
+    return (currentFullDesc != null) 
+          && (mouseX >= currentFullDesc.x && mouseX <= currentFullDesc.x+currentFullDesc.w)
+          && (mouseY >= currentFullDesc.y && mouseY <= currentFullDesc.y+currentFullDesc.h);
+  }
+
+  public void mousePressed() {
+    if (isMouseInside()) {
+      onClickAction.run();
+    }
   }
 }
