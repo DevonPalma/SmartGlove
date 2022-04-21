@@ -45,10 +45,10 @@ struct MultiplexerCollection {
     }
 
     bool isSet() {
-        return thumb != 0 &&
-               pointer != 0 &&
-               middle != 0 &&
-               ring != 0 &&
+        return thumb != 0 ||
+               pointer != 0 ||
+               middle != 0 ||
+               ring != 0 ||
                pinky != 0;
     }
 

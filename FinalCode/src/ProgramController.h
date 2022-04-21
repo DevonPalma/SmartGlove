@@ -49,7 +49,7 @@ public:
     }
 
     int getBestCollection(MultiplexerCollection *comparedCol) {
-        int bestVal = 256 * 9; // Impossible to get past this with the algorithm i use
+        int bestVal = 1000000000; 
         int bestColIndex = -1;
 
         for (int i = 0; i < HAND_POS_COUNT; i++) {
