@@ -30,9 +30,9 @@ void setup() {
     programmer.begin();
     programmer.enableProgrammer(); // Enables programming the controller via byte commands if needed
     myMPU.begin();
-    comparer.push(F_10011);
-    comparer.push(F_00010);
-    comparer.push(F_00110);
+    comparer.push(P_10011);
+    comparer.push(P_00010);
+    comparer.push(P_00110);
 }
 
 void loop() {

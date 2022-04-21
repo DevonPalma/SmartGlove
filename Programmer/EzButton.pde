@@ -44,23 +44,12 @@ class EzButton extends Button {
         .build());
   }
   
-  private void addWaitingDescription() {
-    addDescription(
-      new BoolChecker() {
-        public boolean check() {
-          return waitingForResponse;
-        }
-      },
-      new ButtonDescriptionBuilder()
-        .text("Waiting")
-        .build());
-  }
+  
   
   private void addClickAction() {
     bindOnClick(new Runnable() {
       public void run() {
         System.out.printf("Pressed %s, sending cmd\n", defaultLabel);
-        waitingForResponse = true;
         sendCommand(mainCmd, subCmd);
       }
     });
@@ -81,7 +70,6 @@ class EzButton extends Button {
     addDefaultDescription();
     addHoverDescription();
     addClickAction();
-    addWaitingDescription();
   }
   
   public EzButton(int x, int y, MainCommand cmd, RequestSubCommands pos) {
@@ -91,7 +79,6 @@ class EzButton extends Button {
     addDefaultDescription();
     addHoverDescription();
     addClickAction();
-    addWaitingDescription();
   }
   
 }

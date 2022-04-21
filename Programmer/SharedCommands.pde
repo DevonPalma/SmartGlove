@@ -1,4 +1,4 @@
-/* Commands fill up one byte. This means I can have 256 different commands
+500/* Commands fill up one byte. This means I can have 256 different commands
  * In order to not have to define a shit load of them for various hand poses
  * I made a special lil algorithm for creating the byte per command
  *
@@ -23,9 +23,7 @@
 
 enum MainCommand {
   PROGRAM(0x0), // Using a FingerPosition as the sub cmd, tells the particle to save its current pos in corresponding finger
-    STATUS(0x1),   // Used for indicating a certain status on the particle
-    REQUEST(0x2), // Sends a request packet, see RequestSubCommands for extra data
-    BEST_FINGER(0x3); // Used to respond to a best request packet
+    REQUEST(0x1); // Sends a request packet, see RequestSubCommands for extra data
 
   public final byte metaData;
 
@@ -44,7 +42,7 @@ enum MainCommand {
 }
 
 enum FingerPosition {
-  F_00000(0x00), 
+  P_00000(0x00), 
     F_00001(0x01), 
     F_00010(0x02), 
     F_00011(0x03), 
@@ -114,45 +112,6 @@ enum RequestSubCommands {
   }
 }
 
-enum Statuses {
-  PROGRAM_SUCCESSFUL(0x00),
-  WIPE_SUCCESSFUL(0x01),
-  
-  UNIMPLEMENTED_COMMAND(0x10),
-  NO_DATA_AVAILABLE(0x11),
-  REQUEST_FAILED(0x12);
-  
-  public final byte metaData;
-
-  private Statuses(int data) {
-    this.metaData = (byte) data;
-  }
-  
-  public static Statuses get(byte data) {
-    for (Statuses stat : Statuses.values()) {
-      if (stat.metaData == data) {
-        return stat;
-      }
-    }
-    return null;
-  }
-}
-
-
-byte[] readCommand() {
-  byte[] dat = new byte[2];
-  
-  if (myPort.available() > 0) {
-    byte packet = (byte) myPort.read();
-    dat[0] = (byte) ((packet & 0xE0) >> 5);
-    dat[1] = (byte) (packet & 0x1F);
-  } else {
-    dat[0] = MainCommand.STATUS.metaData;
-    dat[1] = Statuses.NO_DATA_AVAILABLE.metaData;
-  }
-  
-  return dat;
-}
 
 void sendCommand(byte mainCmd, byte dat) {
   myPort.write(mainCmd << 5 | dat);

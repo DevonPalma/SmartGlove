@@ -43,7 +43,7 @@ public:
                 handleRequest(data);
                 break;
             default:
-                sendCommand(STATUS, UNIMPLEMENTED_COMMAND);
+                Serial.printf("Unknown command\n");
                 break;
             }
         }
@@ -78,29 +78,30 @@ private:
             MultiplexerCollection mpc(&myMulp);
             allSigns[fingerPos].set(&mpc);
             allSigns[fingerPos].saveToEEPROM(fingerPos);
-            delay(500);
-            sendCommand(STATUS, PROGRAM_SUCCESSFUL);
+            Serial.printf("Programmed finger pos %x\n", fingerPos);
         }
     }
 
     void handleRequest(byte request) {
-        if (request == BEST) {
+        Request req = (Request)request;
+
+        switch (req) {
+        case BEST: {
             int bestCol = getBestCollection();
-            if (bestCol == -1) {
-                sendCommand(STATUS, REQUEST_FAILED);
-            } else {
-                sendCommand(BEST_FINGER, bestCol);
-            }
-        } else if (request == WIPE) {
-            Serial.printf("WIPING\n");
+            Serial.printf("Best collection is %d\n", bestCol);
+        } break;
+        case WIPE: {
+            Serial.printf("Beginning wipe\n");
             MultiplexerCollection empty;
             for (int i = 0; i < HAND_POS_COUNT; i++) {
                 Serial.printf("Wiped %d/%d\n", i + 1, HAND_POS_COUNT);
                 allSigns[i].set(&empty);
                 allSigns[i].saveToEEPROM(i);
             }
-            delay(500);
-            sendCommand(STATUS, WIPE_SUCCESSFUL);
+            Serial.printf("Wipe completed\n");
+        } break;
+        default:
+            break;
         }
     }
 };
