@@ -26,6 +26,7 @@ void setup() {
     }
   }
   myButtons.add(new EzButton(3, y+1, MainCommand.REQUEST, RequestSubCommands.BEST));
+  myButtons.add(new EzButton(2, y+1, MainCommand.REQUEST, RequestSubCommands.WIPE));
 }
 
 
@@ -68,6 +69,10 @@ void draw() {
           break;
         case REQUEST_FAILED:
           System.out.printf("Programmer > Failed to request data\n");
+          waitingForResponse = false;
+          break;
+        case WIPE_SUCCESSFUL:
+          System.out.printf("Programmer > Successfully wiped glove data!\n");
           waitingForResponse = false;
           break;
         default:

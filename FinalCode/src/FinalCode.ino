@@ -7,79 +7,69 @@
 
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
+#include "MPU6050.h"
 #include "Multiplexer.h"
-#include "MultiplexerCollector.h"
 #include "PinData.h"
+#include "ProgramController.h"
+#include "SequenceRunner.h"
 #include "SharedCommands.h"
+
+const int SAMPLE_RATE = 100;
 
 // For some reason this has to be declared RIGHT after my imports IDFK
 int getBestCollection(MultiplexerCollection *comparedCol);
 void programFingerPosition(FingerPosition fingerPos);
 
-Multiplexer myMulp(P_MULP_ENABLE, P_MULP_S0, P_MULP_S1, P_MULP_S2, P_MULP_S3, P_MULP_SIGNAL);
+ProgramController programmer(P_MULP_ENABLE, P_MULP_S0, P_MULP_S1, P_MULP_S2, P_MULP_S3, P_MULP_SIGNAL);
+MPU6050 myMPU;
 
-MultiplexerCollection allSigns[HAND_POS_COUNT];
+SequenceSaver comparer(3);
+SequenceSaver curData(3);
 
 void setup() {
-    myMulp.begin();
-    for (int i = 0; i < HAND_POS_COUNT; i++) {
-      allSigns[i].loadFromEEPROM(i);
-    }
+    programmer.begin();
+    programmer.enableProgrammer(); // Enables programming the controller via byte commands if needed
+    myMPU.begin();
+    comparer.push(F_10011);
+    comparer.push(F_00010);
+    comparer.push(F_00110);
 }
 
 void loop() {
-    if (Serial.available() > 0) {
-        byte cmd, data;
-        readCommand(&cmd, &data);
-        switch (cmd) {
-        case PROGRAM:
-            programFingerPosition(data);
-            break;
-        case REQUEST:
-            handleRequest(data);
-            break;
-        default:
-            sendCommand(STATUS, UNIMPLEMENTED_COMMAND);
-            break;
-        }
-    }
-}
+    programmer.update(); // does basically nothing if enableProgrammer isn't called
 
-void programFingerPosition(byte fingerPos) {
-    if (fingerPos < HAND_POS_COUNT) {
-        MultiplexerCollection mpc(&myMulp);
-        allSigns[fingerPos].set(&mpc);
-        allSigns[fingerPos].saveToEEPROM(fingerPos);
-        sendCommand(STATUS, PROGRAM_SUCCESSFUL);
-    }
-}
+    if (timer10MS()) {
+        static FingerPosition lastPos;
+        static FingerPosition lastAdded;
+        static int lastChangeTime = millis();
+        FingerPosition curPos = (FingerPosition)programmer.getBestCollection();
+        int curTime = millis();
 
-void handleRequest(byte request) {
-    if (request == BEST) {
-        MultiplexerCollection mpc(&myMulp);
-        int bestCol = getBestCollection(&mpc);
-        if (bestCol == -1) {
-            sendCommand(STATUS, REQUEST_FAILED);
-        } else {
-            sendCommand(BEST_FINGER, bestCol);
-        }
-    }
-}
-
-int getBestCollection(MultiplexerCollection *comparedCol) {
-    int bestVal = 256 * 9; // Impossible to get past this with the algorithm i use
-    int bestColIndex = -1;
-
-    for (int i = 0; i < HAND_POS_COUNT; i++) {
-        MultiplexerCollection *curSign = &allSigns[i];
-        if (curSign->isSet()) {
-            int curVal = curSign->compare(comparedCol);
-            if (curVal < bestVal) {
-                bestVal = curVal;
-                bestColIndex = i;
+        if (lastPos != curPos) {
+            if (curTime - lastChangeTime > 600 && lastAdded != curPos) {
+                curData.push(curPos);
+                lastAdded = curPos;
+                Serial.printf("Added ");
+                Serial.printf("%d", (curPos & 0x10) >> 4);
+                Serial.printf("%d", (curPos & 0x08) >> 3);
+                Serial.printf("%d", (curPos & 0x04) >> 2);
+                Serial.printf("%d", (curPos & 0x02) >> 1);
+                Serial.printf("%d", (curPos & 0x01));
+                Serial.printf(" to curData\n", curPos);
             }
+            lastPos = curPos;
+            lastChangeTime = curTime;
         }
     }
+}
 
-    return bestColIndex;
+bool timer10MS() {
+    static int lastTime = millis();
+    int curTime = millis();
+
+    if (curTime - lastTime > 10) {
+        lastTime = curTime;
+        return true;
+    }
+    return false;
 }

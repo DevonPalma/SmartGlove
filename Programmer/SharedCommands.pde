@@ -95,7 +95,8 @@ enum FingerPosition {
 
 
 enum RequestSubCommands {
-  BEST(0x00); // Request the best finger position, Expects the provide packet value to be a finger position
+  BEST(0x00), // Request the best finger position, Expects the provide packet value to be a finger position
+  WIPE(0x01);
 
   public final byte metaData;
 
@@ -115,6 +116,7 @@ enum RequestSubCommands {
 
 enum Statuses {
   PROGRAM_SUCCESSFUL(0x00),
+  WIPE_SUCCESSFUL(0x01),
   
   UNIMPLEMENTED_COMMAND(0x10),
   NO_DATA_AVAILABLE(0x11),
