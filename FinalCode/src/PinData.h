@@ -8,6 +8,14 @@
  *   SDA  A4   A5   M14  M10
  */
 
+
+/* New Pin Output Looking from front
+ *  5V
+ *
+ *
+ * 
+ */
+
 // ------ Direct Particle Connections -------
 // MPU Connections
 const int P_INT = D7;
@@ -22,14 +30,10 @@ const int P_MULP_SIGNAL = A0;
 
 // ------ Multiplexer Connections ------
 
-const int M_THUMB = 9;
-const int M_POINTER_HIGH = 8;
-const int M_POINTER_LOW = 7;
-const int M_MIDDLE_HIGH = 12;
-const int M_MIDDLE_LOW = 13;
-const int M_RING_HIGH = 10;
-const int M_RING_LOW = 11;
-const int M_PINKY_HIGH = 14;
-const int M_PINKY_LOW = 15;
+const int M_THUMB = 8;
+const int M_POINTER = 7;
+const int M_MIDDLE = 9;
+const int M_RING = 12;
+const int M_PINKY = 13;
 
 #endif

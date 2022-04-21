@@ -7,14 +7,10 @@
 
 struct MultiplexerCollection {
     byte thumb;
-    byte pointer_high;
-    byte pointer_low;
-    byte middle_high;
-    byte middle_low;
-    byte ring_high;
-    byte ring_low;
-    byte pinky_high;
-    byte pinky_low;
+    byte pointer;
+    byte middle;
+    byte ring;
+    byte pinky;
 
     // Analogread (which is what the multiplexer reads w/) returns w/ 12 bit percision (0-4095)
     // It returns the value in a uint32_t which is 4 bytes. As I plan on writing this struct to
@@ -26,79 +22,63 @@ struct MultiplexerCollection {
 
     MultiplexerCollection(Multiplexer *mulp) {
         thumb = mulp->read(M_THUMB) / 16;
-        pointer_high = mulp->read(M_POINTER_HIGH) / 16;
-        pointer_low = mulp->read(M_POINTER_LOW) / 16;
-        middle_high = mulp->read(M_MIDDLE_HIGH) / 16;
-        middle_low = mulp->read(M_MIDDLE_LOW) / 16;
-        ring_high = mulp->read(M_RING_HIGH) / 16;
-        ring_low = mulp->read(M_RING_LOW) / 16;
-        pinky_high = mulp->read(M_PINKY_HIGH) / 16;
-        pinky_low = mulp->read(M_PINKY_LOW) / 16;
+        pointer = mulp->read(M_POINTER) / 16;
+        middle = mulp->read(M_MIDDLE) / 16;
+        ring = mulp->read(M_RING) / 16;
+        pinky = mulp->read(M_PINKY) / 16;
     }
 
     void set(MultiplexerCollection *mulpC) {
         thumb = mulpC->thumb;
-        pointer_high = mulpC->pointer_high;
-        pointer_low = mulpC->pointer_low;
-        middle_high = mulpC->middle_high;
-        middle_low = mulpC->middle_low;
-        ring_high = mulpC->ring_high;
-        ring_low = mulpC->ring_low;
-        pinky_high = mulpC->pinky_high;
-        pinky_low = mulpC->pinky_low;
+        pointer = mulpC->pointer;
+        middle = mulpC->middle;
+        ring = mulpC->ring;
+        pinky = mulpC->pinky;
+    }
+
+    void clear() {
+        thumb = 0;
+        pointer = 0;
+        middle = 0;
+        ring = 0;
+        pinky = 0;
     }
 
     bool isSet() {
         return thumb != 0 &&
-               pointer_high != 0 &&
-               pointer_low != 0 &&
-               middle_high != 0 &&
-               middle_low != 0 &&
-               ring_high != 0 &&
-               ring_low != 0 &&
-               pinky_high != 0 &&
-               pinky_low != 0;
+               pointer != 0 &&
+               middle != 0 &&
+               ring != 0 &&
+               pinky != 0;
     }
 
     // compares how close a mulp is to another (Sum of differences between each finger)
     int compare(MultiplexerCollection *mulpC) {
         int val = 0;
-        val += abs(thumb - mulpC->thumb);
-        val += abs(pointer_high - mulpC->pointer_high);
-        val += abs(pointer_low - mulpC->pointer_low);
-        val += abs(middle_high - mulpC->middle_high);
-        val += abs(middle_low - mulpC->middle_low);
-        val += abs(ring_high - mulpC->ring_high);
-        val += abs(ring_low - mulpC->ring_low);
-        val += abs(pinky_high - mulpC->pinky_high);
-        val += abs(pinky_low - mulpC->pinky_low);
+        val += abs(thumb - mulpC->thumb) ;
+        val += abs(pointer - mulpC->pointer);
+        val += abs(middle - mulpC->middle);
+        val += abs(ring - mulpC->ring);
+        val += abs(pinky - mulpC->pinky) ;
         return val;
     }
 
     void saveToEEPROM(int index) {
-        int startIndex = index * 9;
+        int startIndex = index * 5;
         EEPROM.write(startIndex + 0, thumb);
-        EEPROM.write(startIndex + 1, pointer_high);
-        EEPROM.write(startIndex + 2, pointer_low);
-        EEPROM.write(startIndex + 3, middle_high);
-        EEPROM.write(startIndex + 4, middle_low);
-        EEPROM.write(startIndex + 5, ring_high);
-        EEPROM.write(startIndex + 6, ring_low);
-        EEPROM.write(startIndex + 7, pinky_high);
-        EEPROM.write(startIndex + 8, pinky_low);
+        EEPROM.write(startIndex + 1, pointer);
+        EEPROM.write(startIndex + 2, middle);
+        EEPROM.write(startIndex + 3, ring);
+        EEPROM.write(startIndex + 4, pinky);
     }
 
     void loadFromEEPROM(int index) {
-        int startIndex = index * 9;
+        int startIndex = index * 5;
         thumb = EEPROM.read(startIndex + 0);
-        pointer_high = EEPROM.read(startIndex + 1);
-        pointer_low = EEPROM.read(startIndex + 2);
-        middle_high = EEPROM.read(startIndex + 3);
-        middle_low = EEPROM.read(startIndex + 4);
-        ring_high = EEPROM.read(startIndex + 5);
-        ring_low = EEPROM.read(startIndex + 6);
-        pinky_high = EEPROM.read(startIndex + 7);
-        pinky_low = EEPROM.read(startIndex + 8);
+        pointer = EEPROM.read(startIndex + 1);
+        middle = EEPROM.read(startIndex + 2);
+        ring = EEPROM.read(startIndex + 3);
+        pinky = EEPROM.read(startIndex + 4);
     }
 };
 #endif

@@ -5,14 +5,14 @@
 #include "SharedCommands.h"
 
 class ProgramController {
-    Multiplexer myMulp;
     MultiplexerCollection *allSigns;
+    Multiplexer *myMulp;
 
     bool isProgrammerEnabled = false;
 
 public:
-    ProgramController(int P_MULP_ENABLE, int P_MULP_S0, int P_MULP_S1, int P_MULP_S2, int P_MULP_S3, int P_MULP_SIGNAL) : myMulp(P_MULP_ENABLE, P_MULP_S0, P_MULP_S1, P_MULP_S2, P_MULP_S3, P_MULP_SIGNAL) {
-
+    ProgramController(Multiplexer *myMulp) {
+        this->myMulp = myMulp;
         allSigns = new MultiplexerCollection[HAND_POS_COUNT];
     }
 
@@ -21,7 +21,6 @@ public:
     }
 
     void begin() {
-        myMulp.begin();
         for (int i = 0; i < HAND_POS_COUNT; i++) {
             allSigns[i].loadFromEEPROM(i);
         }
@@ -68,14 +67,14 @@ public:
     }
 
     int getBestCollection() {
-        MultiplexerCollection mpc(&myMulp);
+        MultiplexerCollection mpc(myMulp);
         return getBestCollection(&mpc);
     }
 
 private:
     void programFingerPosition(byte fingerPos) {
         if (fingerPos < HAND_POS_COUNT) {
-            MultiplexerCollection mpc(&myMulp);
+            MultiplexerCollection mpc(myMulp);
             allSigns[fingerPos].set(&mpc);
             allSigns[fingerPos].saveToEEPROM(fingerPos);
             Serial.printf("Programmed finger pos %x\n", fingerPos);
@@ -92,10 +91,9 @@ private:
         } break;
         case WIPE: {
             Serial.printf("Beginning wipe\n");
-            MultiplexerCollection empty;
             for (int i = 0; i < HAND_POS_COUNT; i++) {
                 Serial.printf("Wiped %d/%d\n", i + 1, HAND_POS_COUNT);
-                allSigns[i].set(&empty);
+                allSigns[i].clear();
                 allSigns[i].saveToEEPROM(i);
             }
             Serial.printf("Wipe completed\n");

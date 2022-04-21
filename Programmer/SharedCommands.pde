@@ -1,4 +1,4 @@
-500/* Commands fill up one byte. This means I can have 256 different commands
+/* Commands fill up one byte. This means I can have 256 different commands
  * In order to not have to define a shit load of them for various hand poses
  * I made a special lil algorithm for creating the byte per command
  *
@@ -42,38 +42,38 @@ enum MainCommand {
 }
 
 enum FingerPosition {
-  P_00000(0x00), 
-    F_00001(0x01), 
-    F_00010(0x02), 
-    F_00011(0x03), 
-    F_00100(0x04), 
-    F_00101(0x05), 
-    F_00110(0x06), 
-    F_00111(0x07),
-    F_01000(0x08),
-    F_01001(0x09),
-    F_01010(0x0A),
-    F_01011(0x0B),
-    F_01100(0x0C),
-    F_01101(0x0D),
-    F_01110(0x0E),
-    F_01111(0x0F),
-    F_10000(0x10), 
-    F_10001(0x11), 
-    F_10010(0x12), 
-    F_10011(0x13), 
-    F_10100(0x14), 
-    F_10101(0x15), 
-    F_10110(0x16), 
-    F_10111(0x17),
-    F_11000(0x18),
-    F_11001(0x19),
-    F_11010(0x1A),
-    F_11011(0x1B),
-    F_11100(0x1C),
-    F_11101(0x1D),
-    F_11110(0x1E),
-    F_11111(0x1F);
+  P_FIST(0x00), 
+    P_PEACE(0x01), 
+    P_GUN(0x02), 
+    P_ROCK(0x03), 
+    P_SPIDER(0x04), 
+    P_2P1S(0x05), 
+    P_PHONE(0x06), 
+    P_OKAY(0x07);
+    //F_01000(0x08),
+    //F_01001(0x09),
+    //F_01010(0x0A),
+    //F_01011(0x0B),
+    //F_01100(0x0C),
+    //F_01101(0x0D),
+    //F_01110(0x0E),
+    //F_01111(0x0F);
+    //F_10000(0x10), 
+    //F_10001(0x11), 
+    //F_10010(0x12), 
+    //F_10011(0x13), 
+    //F_10100(0x14), 
+    //F_10101(0x15), 
+    //F_10110(0x16), 
+    //F_10111(0x17),
+    //F_11000(0x18),
+    //F_11001(0x19),
+    //F_11010(0x1A),
+    //F_11011(0x1B),
+    //F_11100(0x1C),
+    //F_11101(0x1D),
+    //F_11110(0x1E),
+    //F_11111(0x1F);
 
   public final byte metaData;
 

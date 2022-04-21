@@ -20,56 +20,64 @@ const int SAMPLE_RATE = 100;
 int getBestCollection(MultiplexerCollection *comparedCol);
 void programFingerPosition(FingerPosition fingerPos);
 
-ProgramController programmer(P_MULP_ENABLE, P_MULP_S0, P_MULP_S1, P_MULP_S2, P_MULP_S3, P_MULP_SIGNAL);
-MPU6050 myMPU;
+Multiplexer myMulp(P_MULP_ENABLE, P_MULP_S0, P_MULP_S1, P_MULP_S2, P_MULP_S3, P_MULP_SIGNAL);
+ProgramController programmer(&myMulp);
 
-SequenceSaver comparer(3);
-SequenceSaver curData(3);
+FingerPosition countUpMatch[] = {P_PEACE, P_GUN, P_ROCK};
+FingerPosition countDownMatch[] = {P_ROCK, P_GUN, P_PEACE};
+FingerPosition __curData[3];
+SequenceSaver curData(3, __curData);
 
 void setup() {
+    myMulp.begin();
     programmer.begin();
     programmer.enableProgrammer(); // Enables programming the controller via byte commands if needed
-    myMPU.begin();
-    comparer.push(P_10011);
-    comparer.push(P_00010);
-    comparer.push(P_00110);
 }
 
 void loop() {
+    MultiplexerCollection s(&myMulp);
+
     programmer.update(); // does basically nothing if enableProgrammer isn't called
 
-    if (timer10MS()) {
-        static FingerPosition lastPos;
-        static FingerPosition lastAdded;
-        static int lastChangeTime = millis();
-        FingerPosition curPos = (FingerPosition)programmer.getBestCollection();
-        int curTime = millis();
+    static int fingerPosCounts[8];
+    static int totalCount;
+    static int startTime = millis();
 
-        if (lastPos != curPos) {
-            if (curTime - lastChangeTime > 600 && lastAdded != curPos) {
-                curData.push(curPos);
-                lastAdded = curPos;
-                Serial.printf("Added ");
-                Serial.printf("%d", (curPos & 0x10) >> 4);
-                Serial.printf("%d", (curPos & 0x08) >> 3);
-                Serial.printf("%d", (curPos & 0x04) >> 2);
-                Serial.printf("%d", (curPos & 0x02) >> 1);
-                Serial.printf("%d", (curPos & 0x01));
-                Serial.printf(" to curData\n", curPos);
+    static int bestChoice;
+    static int bestChoiceCount;
+
+    int i = programmer.getBestCollection();
+    fingerPosCounts[i]++;
+    totalCount++;
+
+    int curTime = millis();
+    if (curTime - startTime > 100) {
+        for (int i = 0; i < 8; i++) {
+            float perc = (float)fingerPosCounts[i] / (float)totalCount * 100.0;
+            if (perc > 80) {
+                if (bestChoice == i) {
+                    bestChoiceCount++;
+                } else {
+                    bestChoice = i;
+                    bestChoiceCount = 0;
+                }
             }
-            lastPos = curPos;
-            lastChangeTime = curTime;
+            fingerPosCounts[i] = 0;
+        }
+        totalCount = 0;
+        startTime = curTime;
+        if (bestChoiceCount == 6) {
+            Serial.printf("Best choice: %d\n", bestChoice);
+            curData.push((FingerPosition) bestChoice);
+            curData.print();
+        }
+
+        if (curData.matches(3, countUpMatch)) {
+            Serial.printf("Counted up hoe\n");
+        }
+
+        if (curData.matches(3, countDownMatch)) {
+            Serial.printf("Counted down hoe\n");
         }
     }
-}
-
-bool timer10MS() {
-    static int lastTime = millis();
-    int curTime = millis();
-
-    if (curTime - lastTime > 10) {
-        lastTime = curTime;
-        return true;
-    }
-    return false;
 }

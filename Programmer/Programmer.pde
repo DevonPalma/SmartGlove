@@ -9,10 +9,9 @@ List<Button> myButtons;
 Button testButton;
 
 void setup() {
-  size(640, 600);
+  size(640, 300);
   myPort = new Serial(this, "COM5", 9600);
   myButtons = new ArrayList();
-  waitingForResponse = false;
 
   int x = 0;
   int y = 0;
@@ -50,7 +49,7 @@ void draw() {
 
   if (myPort.available() > 0) {
     String dat = myPort.readString();
-    System.out.printf("Particle > %s", dat);
+    System.out.printf("%s", dat);
   }
 
 }
